@@ -1,98 +1,176 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState } from 'react';
+
+const districtTaluks = {
+  ranchi: ['Ranchi Sadar', 'Ormanjhi', 'Kanke'],
+  dhanbad: ['Katras', 'Govindpur', 'Baliapur'],
+  bokaro: ['Chas', 'Gomia', 'Bermo'],
+  giridih: ['Giridih Sadar', 'Tisri', 'Bagodar'],
+  hazaribagh: ['Hazaribagh Sadar', 'Barhi', 'Ichak'],
+  gumla: ['Gumla Sadar', 'Chainpur', 'Bishunpur'],
+  palamu: ['Medininagar', 'Chhatarpur', 'Hussainabad'],
+  godda: ['Godda Sadar', 'Pathargama', 'Sundarpahari'],
+  'east-singhbhum': ['Jamshedpur', 'Potka', 'Dhalbhumgarh'],
+  'west-singhbhum': ['Chaibasa', 'Jagannathpur', 'Manoharpur'],
+};
 
 function Grievance() {
-  const [selectedProblems, setSelectedProblems] = useState([]);
-  const [showOptions, setShowOptions] = useState(false);
-  const dropdownRef = useRef(null);
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  const problemTypes = [
-    "Technical Issue",
-    "Network Problem",
-    "Facilities",
-    "Harassment",
-    "Academic",
-    "Administration",
-    "Transport",
-    "Hostel",
-    "Other"
-  ];
+  const taluks = districtTaluks[selectedDistrict] || [];
 
-  const handleCheckboxChange = (problem) => {
-    setSelectedProblems((prev) =>
-      prev.includes(problem)
-        ? prev.filter((item) => item !== problem)
-        : [...prev, problem]
-    );
+  const inputStyle = {
+    width: '100%',
+    padding: '0.5rem',
+    border: '1px solid #ccc',
+    borderRadius: '6px',
+    marginBottom: '1rem',
+    color: '#000000',
   };
 
-  // Close dropdown if click happens outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowOptions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+      setSelectedFile(file);
+    } else {
+      alert('Please upload a JPG or PNG image.');
+    }
+  };
+
+  const handleDraftSave = () => {
+    alert('Draft saved!');
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert('Grievance submitted!');
+  };
 
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-3">Raise a Grievance</h1>
-      <form className="space-y-3">
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '1rem' }}>
+      <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem', color: '#000' }}>
+        Raise a Grievance
+      </h1>
+      <form onSubmit={handleSubmit}>
+        <input type="text" placeholder="Your Name" style={inputStyle} required />
+        <input type="email" placeholder="Your Email" style={inputStyle} required />
         <input
-          type="text"
-          placeholder="Your Name"
-          className="w-full p-2 border rounded"
-        />
-        <input
-          type="email"
-          placeholder="Your Email"
-          className="w-full p-2 border rounded"
+          type="tel"
+          placeholder="Your Phone Number"
+          style={inputStyle}
+          pattern="[0-9]{10}"
+          maxLength={10}
+          required
         />
 
-        {/* Problem type dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <button
-            type="button"
-            onClick={() => setShowOptions(!showOptions)}
-            className="w-full p-2 border rounded bg-gray-100 text-left"
-          >
-            {selectedProblems.length > 0
-              ? selectedProblems.join(", ")
-              : "Select Type of Problem"}
-          </button>
+        {/* Problem Type Dropdown */}
+        <select style={inputStyle} required>
+          <option value="" disabled selected style={{ color: '#000000' }}>
+            Select Problem Type
+          </option>
+          <option value="infrastructure">Infrastructure Issue</option>
+          <option value="water">Water Supply</option>
+          <option value="electricity">Electricity</option>
+          <option value="sanitation">Sanitation</option>
+          <option value="other">Other</option>
+        </select>
 
-          {showOptions && (
-            <div className="absolute z-10 w-full border rounded p-2 h-28 overflow-y-scroll mt-1 bg-white shadow">
-              {problemTypes.map((problem, idx) => (
-                <label key={idx} className="flex items-center space-x-2 mb-1">
-                  <input
-                    type="checkbox"
-                    checked={selectedProblems.includes(problem)}
-                    onChange={() => handleCheckboxChange(problem)}
-                  />
-                  <span>{problem}</span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* District Dropdown */}
+        <select
+          style={inputStyle}
+          value={selectedDistrict}
+          onChange={(e) => setSelectedDistrict(e.target.value)}
+          required
+        >
+          <option value="" disabled selected style={{ color: '#000000' }}>
+            Select District (Jharkhand)
+          </option>
+          {Object.keys(districtTaluks).map((districtKey) => (
+            <option key={districtKey} value={districtKey}>
+              {districtKey.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+            </option>
+          ))}
+        </select>
 
+        {/* Taluk Dropdown */}
+        <select style={inputStyle} disabled={!selectedDistrict} required>
+          <option value="" disabled selected style={{ color: '#000000' }}>
+            Select Taluk
+          </option>
+          {taluks.map((taluk) => (
+            <option key={taluk} value={taluk}>
+              {taluk}
+            </option>
+          ))}
+        </select>
+
+        {/* Grievance Text */}
         <textarea
           placeholder="Write your grievance here..."
-          className="w-full p-2 border rounded"
+          style={{ ...inputStyle, height: '120px' }}
+          required
         ></textarea>
 
-      <h1 className="text-xl text-black font-bold mb-3">Raise a Grievance</h1>
-      <form className="text-black space-y-3">
-        <input type="text" placeholder="Your Name" className="w-full p-2 placeholder:text-black border rounded" />
-        <input type="email" placeholder="Your Email" className="w-full p-2 border rounded" />
-        <textarea placeholder="Write your grievance here..." className="w-full p-2 border rounded"></textarea>
+        {/* Upload Box */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <label
+            htmlFor="file-upload"
+            style={{
+              backgroundColor: '#2563eb',
+              color: '#fff',
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              cursor: 'pointer',
+            }}
+          >
+            Upload
+          </label>
+          <input
+            id="file-upload"
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+          <span style={{ fontSize: '0.875rem', color: '#555' }}>
+            {selectedFile ? selectedFile.name : 'No file selected'}
+          </span>
+        </div>
 
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Submit
-        </button>
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+          <button
+            type="submit"
+            style={{
+              backgroundColor: '#16a34a',
+              color: '#fff',
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = '#15803d')}
+            onMouseOut={(e) => (e.target.style.backgroundColor = '#16a34a')}
+          
+          >
+            Save as Draft
+          </button>
+          <button
+            type="submit"
+            style={{
+              backgroundColor: '#16a34a',
+              color: '#fff',
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = '#15803d')}
+            onMouseOut={(e) => (e.target.style.backgroundColor = '#16a34a')}
+          >
+            Submit
+          </button>
+        </div>
       </form>
     </div>
   );
